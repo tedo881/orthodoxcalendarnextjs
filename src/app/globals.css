@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+@theme {
+  --font-lort: var(--font-lort);
+  --font-ucnobi: var(--font-ucnobi);
+  --font-bold: var(--font-bold);
+  --color-paper: #fbecbb;
+  --color-parchment: #e9d8b0;
+  --color-gold: #bd9b59;
+  --color-gold-dark: #a5843f;
+  --color-feast: #c81f07;
+  --color-fastfree: #0057d8;
+}
+
+:root {
+  --bg: #efe2c2;
+  --surface: #fdf6e4;
+  --surface-2: #f6ead0;
+  --ink: #1d1a14;
+  --ink-soft: #5b5242;
+  --line: #ddc79a;
+  --accent: #bd9b59;
+  --feast: #c81f07;
+  --fastfree: #0057d8;
+  --shadow: 0 1px 2px rgb(61 46 20 / 0.08), 0 8px 24px -12px rgb(61 46 20 / 0.35);
+  --reading-size: 1.0625rem;
+}
+
+[data-theme="dark"] {
+  --bg: #16130f;
+  --surface: #211c16;
+  --surface-2: #2a241c;
+  --ink: #f0e6d2;
+  --ink-soft: #b9ab8f;
+  --line: #3a3128;
+  --accent: #d9b66c;
+  --feast: #ff7a63;
+  --fastfree: #7db0ff;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.7);
+}
+
+html {
+  color-scheme: light;
+}
+
+[data-theme="dark"] html,
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-lort), Georgia, serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+body[data-font="algeti"] {
+  font-family: var(--font-algeti), Georgia, serif;
+}
+
+/* Cards ------------------------------------------------------------ */
+.card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(4px);
+}
+
+.pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--line);
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--surface) 96%, #fff), var(--surface-2));
+  color: var(--ink);
+  padding: 0.625rem 1rem;
+  font-size: 0.95rem;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.btn:hover { background-color: var(--surface); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); box-shadow: none; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.btn-accent {
+  background-image: linear-gradient(to bottom, var(--accent), color-mix(in srgb, var(--accent) 78%, #6b4d17));
+  color: #fffdf6;
+  border-color: color-mix(in srgb, var(--accent) 70%, #6b4d17);
+}
+
+.link-subtle { color: var(--ink-soft); }
+.link-subtle:hover { color: var(--ink); }
+
+/* Church text ------------------------------------------------------ */
+.reading {
+  font-size: var(--reading-size);
+  line-height: 1.75;
+  text-align: justify;
+  overflow-wrap: anywhere;
+}
+
+.reading h1, .reading h2, .reading h3, .reading h4, .reading h5 {
+  font-family: var(--font-ucnobi), Georgia, serif;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 1rem 0 0.5rem;
+  color: var(--ink);
+}
+
+.reading h2 { font-size: 1.45em; }
+.reading h3 { font-size: 1.3em; }
+.reading h4 { font-size: 1.2em; }
+.reading p { margin: 0.65rem 0; }
+.reading b, .reading strong { font-weight: 700; }
+.reading small { font-size: 0.85em; color: var(--ink-soft); }
+.reading font[color="#FF0000"], .reading font[color="#ff0000"] { color: var(--feast); }
+.reading font[color="#0066FF"], .reading font[color="#0066ff"] { color: var(--fastfree); }
+.reading img { max-width: 100%; height: auto; border-radius: 0.75rem; }
+.reading a { color: var(--accent); text-decoration: underline; }
+
+.feast-text { color: var(--feast); }
+.fastfree-text { color: var(--fastfree); }
+
+/* Scrollbar -------------------------------------------------------- */
+* { scrollbar-color: var(--accent) transparent; }
+
+@media print {
+  .no-print { display: none !important; }
+}
