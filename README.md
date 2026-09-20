@@ -77,3 +77,4 @@ TypeScript ლოგიკა შედარებულია ორიგი�
   თუ დაგჭირდა, საჭიროა მცირე პროქსი (მაგ. Cloudflare Worker) და `output: "export"`-ის ნაცვლად სერვერული რეჟიმი.
 - სპლეში ეკრანი — ვებზე საჭირო არ არის.
 # koveldgiurisakitxavinextjs
+# orthodoxcalendarnextjs
