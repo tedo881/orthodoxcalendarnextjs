@@ -80,3 +80,4 @@ TypeScript ლოგიკა შედარებულია ორიგი�
 # orthodoxcalendarnextjs
 # orthodoxcalendarnextjs
 # orthodoxcalendarnextjs
+# orthodoxcalendarnextjs
