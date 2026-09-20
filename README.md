@@ -78,3 +78,4 @@ TypeScript ლოგიკა შედარებულია ორიგი�
 - სპლეში ეკრანი — ვებზე საჭირო არ არის.
 # koveldgiurisakitxavinextjs
 # orthodoxcalendarnextjs
+# orthodoxcalendarnextjs
