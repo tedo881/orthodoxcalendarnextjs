@@ -378,9 +378,8 @@ export function lifeUrl(g: Day, index: number): string {
 
 export function pictureUrl(g: Day, index: number): string {
   const j = julian(g);
-  return `https://res.cloudinary.com/biznetx/image/upload/tevdore/cal/${j.month}/${j.day}/Pictures/${index + 1}_1.jpg`;
+  return `https://pub-dc86fbd1e4bb4370b4338b45e00effe7.r2.dev/${j.month}/${j.day}/Pictures/${index + 1}_1.jpg`;
 }
-
 /** Colour of the marker shown under a day in the month grid. */
 export function markerColor(t: Tables, d: Day): string | null {
   const out = fastingOf(t, d).out;
