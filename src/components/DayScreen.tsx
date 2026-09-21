@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import Script from "next/script";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "./Providers";
 import { MonthCalendar } from "./MonthCalendar";
 import { Reading } from "./Reading";
@@ -24,6 +25,9 @@ import {
   weekday,
   type Day,
 } from "@/lib/calendar";
+
+/** Site that provides the daily reading widget (iframe + embed.js). */
+const READING_SITE = "https://koveldgiurisakitxavinextjs.vercel.app";
 
 export function DayScreen() {
   const { tables, loading, error } = useApp();
@@ -201,7 +205,7 @@ export function DayScreen() {
               className="btn"
               onClick={() => go(addDays(day, -1))}
             >
-              წინა
+              ← წინა
             </button>
             <button
               type="button"
@@ -215,7 +219,7 @@ export function DayScreen() {
               className="btn"
               onClick={() => go(addDays(day, 1))}
             >
-              შემდეგი
+              შემდეგი →
             </button>
           </div>
         </section>
@@ -243,7 +247,7 @@ export function DayScreen() {
       </aside>
 
       <div className="space-y-6">
-        <section className="card p-5 sm:p-7">
+        <section className="card p-3 sm:p-5">
           <h1
             className="mb-3 font-[family-name:var(--font-ucnobi)] text-xl"
             style={{ color: "var(--ink-soft)" }}
@@ -300,6 +304,19 @@ export function DayScreen() {
             )}
           </div>
         </section>
+
+        <section className="card overflow-hidden">
+          <h2 className="px-5 pb-2 pt-4 font-[family-name:var(--font-ucnobi)] text-lg">
+            დღის საკითხავი
+          </h2>
+          <div className="px-5 pb-5">
+            <ReadingFrame src={`${READING_SITE}/embed?date=${toISO(day)}`} />
+          </div>
+          <Script
+            src={`${READING_SITE}/embed.js`}
+            strategy="afterInteractive"
+          />
+        </section>
       </div>
 
       {iconOpen && (
@@ -311,6 +328,78 @@ export function DayScreen() {
         />
       )}
     </div>
+  );
+}
+
+/**
+ * The reading widget. Its height follows the content: the embed page reports its height
+ * with postMessage, and the frame is resized to it (several common message shapes are
+ * accepted, so it works with embed.js as well as with a plain postMessage).
+ */
+function ReadingFrame({ src }: { src: string }) {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const [height, setHeight] = useState(360);
+  const [resized, setResized] = useState(false);
+
+  // New day → new page inside the frame. Shrink the frame first, otherwise a page that
+  // measures document height would never report less than the old frame height.
+  // If the page does not answer within 1.5 s, fall back to the default height.
+  useEffect(() => {
+    setResized(false);
+    setHeight(120);
+    const fallback = window.setTimeout(() => {
+      setResized((done) => {
+        if (!done) setHeight(360);
+        return done;
+      });
+    }, 1500);
+    return () => window.clearTimeout(fallback);
+  }, [src]);
+
+  useEffect(() => {
+    const origin = new URL(READING_SITE).origin;
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== origin) return;
+      if (frameRef.current && event.source !== frameRef.current.contentWindow)
+        return;
+      const data: unknown = event.data;
+      let value: number | null = null;
+      if (typeof data === "number") value = data;
+      else if (typeof data === "string") {
+        try {
+          const parsed = JSON.parse(data) as Record<string, unknown>;
+          value = Number(parsed.height ?? parsed.frameHeight ?? parsed.h);
+        } catch {
+          const match = data.match(/(\d+(?:\.\d+)?)/);
+          value = match ? Number(match[1]) : null;
+        }
+      } else if (data && typeof data === "object") {
+        const record = data as Record<string, unknown>;
+        value = Number(record.height ?? record.frameHeight ?? record.h);
+      }
+      if (value && Number.isFinite(value) && value > 50 && value < 20000) {
+        setHeight(Math.ceil(value));
+        setResized(true);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  return (
+    <iframe
+      ref={frameRef}
+      data-saeklesio
+      src={src}
+      title="დღის საკითხავი"
+      width="100%"
+      height={height}
+      loading="lazy"
+      // until the page reports its height, keep the inner scrollbar as a fallback
+      scrolling={resized ? "no" : "auto"}
+      className="block w-full transition-[height] duration-200"
+      style={{ border: 0, height }}
+    />
   );
 }
 
