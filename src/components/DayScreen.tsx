@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Script from "next/script";
+import { createPortal } from "react-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "./Providers";
 import { MonthCalendar } from "./MonthCalendar";
@@ -15,6 +16,7 @@ import {
   fromISO,
   julian,
   fallbackDayPicture,
+  firstLifePicture,
   lifeTitles,
   plainText,
   sameDay,
@@ -292,12 +294,7 @@ export function DayScreen() {
               >
                 {lives.map((title, index) => (
                   <li key={index}>
-                    <Link
-                      href={`/lives?date=${toISO(day)}&i=${index}`}
-                      className="underline-offset-4 hover:underline"
-                    >
-                      {title || "ხსენება"}
-                    </Link>
+                    <LifeLink day={day} index={index} title={title} />
                   </li>
                 ))}
               </ul>
@@ -400,6 +397,86 @@ function ReadingFrame({ src }: { src: string }) {
       className="block w-full transition-[height] duration-200"
       style={{ border: 0, height }}
     />
+  );
+}
+
+/**
+ * Title of a life. On hover (mouse only) the first picture of that saint, if there is
+ * one, follows the cursor.
+ */
+function LifeLink({
+  day,
+  index,
+  title,
+}: {
+  day: Day;
+  index: number;
+  title: string;
+}) {
+  const [picture, setPicture] = useState<string | null>(null);
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [loaded, setLoaded] = useState(false);
+
+  const onEnter = (event: React.MouseEvent) => {
+    setPosition({ x: event.clientX, y: event.clientY });
+    firstLifePicture(day, index).then(setPicture);
+  };
+
+  // keep the preview inside the window
+  const style = (() => {
+    if (!position) return undefined;
+    const width = 180;
+    const height = 240;
+    const left = Math.min(position.x + 18, window.innerWidth - width - 12);
+    const top =
+      position.y + 18 + height > window.innerHeight
+        ? position.y - height - 18
+        : position.y + 18;
+    return { left, top: Math.max(12, top), width, height };
+  })();
+
+  return (
+    <>
+      <Link
+        href={`/lives?date=${toISO(day)}&i=${index}`}
+        className="underline-offset-4 hover:underline"
+        onMouseEnter={onEnter}
+        onMouseMove={(event) =>
+          setPosition({ x: event.clientX, y: event.clientY })
+        }
+        onMouseLeave={() => {
+          setPosition(null);
+          setLoaded(false);
+        }}
+      >
+        {title || "ხსენება"}
+      </Link>
+      {position &&
+        picture &&
+        style &&
+        createPortal(
+          <div
+            className="pointer-events-none fixed z-[90] overflow-hidden rounded-xl shadow-2xl transition-opacity duration-200"
+            style={{
+              ...style,
+              opacity: loaded ? 1 : 0,
+              border: "1px solid var(--line)",
+              backgroundColor: "var(--surface)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={picture}
+              alt=""
+              onLoad={() => setLoaded(true)}
+              className="h-full w-full object-cover"
+            />
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 

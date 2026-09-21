@@ -462,8 +462,21 @@ function imageExists(url: string): Promise<boolean> {
   });
 }
 
-/** First picture of one life ("<n>_1.jpg" or "<n> (1).jpg"), or null. */
-export async function firstLifePicture(g: Day, index: number): Promise<string | null> {
+const firstPictureCache = new Map<string, Promise<string | null>>();
+
+/** First picture of one life ("<n>_1.jpg" or "<n> (1).jpg"), or null. Cached. */
+export function firstLifePicture(g: Day, index: number): Promise<string | null> {
+  const j = julian(g);
+  const key = `${j.month}/${j.day}/${index + 1}`;
+  let entry = firstPictureCache.get(key);
+  if (!entry) {
+    entry = findFirstLifePicture(g, index);
+    firstPictureCache.set(key, entry);
+  }
+  return entry;
+}
+
+async function findFirstLifePicture(g: Day, index: number): Promise<string | null> {
   const j = julian(g);
   const folder = `${ASSETS_BASE}/${j.month}/${j.day}/Pictures/`;
   const candidates = [
