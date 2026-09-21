@@ -371,15 +371,154 @@ export function lifeTitles(t: Tables, g: Day): string[] {
   return t.lifeIndex[`${j.month}/${j.day}`] ?? [];
 }
 
+/**
+ * Assets that are not part of the deployment (lives of saints, pictures) are served
+ * from R2. Override with NEXT_PUBLIC_ASSETS_BASE if the bucket changes.
+ */
+export const ASSETS_BASE = (
+  process.env.NEXT_PUBLIC_ASSETS_BASE ?? "https://pub-dc86fbd1e4bb4370b4338b45e00effe7.r2.dev"
+).replace(/\/+$/, "");
+
+/** https://<bucket>/<month>/<day>/<index>.html */
 export function lifeUrl(g: Day, index: number): string {
   const j = julian(g);
-  return `/life/${j.month}/${j.day}/${index + 1}.html`;
+  return `${ASSETS_BASE}/${j.month}/${j.day}/${index + 1}.html`;
+}
+
+/** Layouts that are tried in order, in case the files were uploaded into a "life/" folder. */
+function lifeCandidates(g: Day, index: number): string[] {
+  const j = julian(g);
+  const path = `${j.month}/${j.day}/${index + 1}.html`;
+  return [`${ASSETS_BASE}/${path}`, `${ASSETS_BASE}/life/${path}`];
+}
+
+const lifeCache = new Map<string, Promise<string | null>>();
+
+function cleanLife(raw: string): string {
+  // the same clean-up the mobile apps do
+  return raw
+    .replace(/^\uFEFF/, "")
+    .replace(/<img.+\/(img)*>/g, "")
+    .replace(/<a href=.+<\/a>/g, "")
+    .replace(/<img.+?>/g, "");
+}
+
+/** Falls back to the bundled monthly file when the bucket is unreachable. */
+async function lifeFromBundle(g: Day, index: number): Promise<string | null> {
+  const j = julian(g);
+  try {
+    const response = await fetch(`/data/life/${j.month}.json`);
+    if (!response.ok) return null;
+    const month = (await response.json()) as Record<string, string>;
+    const raw = month[`${j.day}/${index + 1}`];
+    return raw ? cleanLife(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Cleaned-up HTML of one life, or null when there is no text for it. */
+export function lifeHtml(g: Day, index: number): Promise<string | null> {
+  const j = julian(g);
+  const key = `${j.month}/${j.day}/${index + 1}`;
+  let entry = lifeCache.get(key);
+  if (!entry) {
+    entry = (async () => {
+      for (const url of lifeCandidates(g, index)) {
+        try {
+          const response = await fetch(url, { mode: "cors" });
+          if (!response.ok) {
+            console.warn(`[life] ${response.status} ${url}`);
+            continue;
+          }
+          const text = await response.text();
+          if (text.trim()) return cleanLife(text);
+        } catch (error) {
+          // usually a missing CORS policy on the bucket
+          console.warn(`[life] request blocked (CORS?) ${url}`, error);
+        }
+      }
+      return lifeFromBundle(g, index);
+    })();
+    lifeCache.set(key, entry);
+  }
+  return entry;
 }
 
 export function pictureUrl(g: Day, index: number): string {
   const j = julian(g);
-  return `https://pub-dc86fbd1e4bb4370b4338b45e00effe7.r2.dev/${j.month}/${j.day}/Pictures/${index + 1}_1.jpg`;
+  return `${ASSETS_BASE}/${j.month}/${j.day}/Pictures/${index + 1}_1.jpg`;
 }
+
+const MAX_PICTURES = 12;
+const pictureCache = new Map<string, Promise<string[]>>();
+
+function imageExists(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(true);
+    image.onerror = () => resolve(false);
+    image.src = url;
+  });
+}
+
+/** First picture of one life ("<n>_1.jpg" or "<n> (1).jpg"), or null. */
+export async function firstLifePicture(g: Day, index: number): Promise<string | null> {
+  const j = julian(g);
+  const folder = `${ASSETS_BASE}/${j.month}/${j.day}/Pictures/`;
+  const candidates = [
+    `${folder}${index + 1}_1.jpg`,
+    `${folder}${encodeURIComponent(`${index + 1} (1).jpg`)}`,
+  ];
+  const found = await Promise.all(candidates.map((url) => imageExists(url)));
+  const at = found.indexOf(true);
+  return at === -1 ? null : candidates[at];
+}
+
+/**
+ * Icon for days that have no icon of their own: the first picture of the first saint,
+ * otherwise of the second one, and so on.
+ */
+export async function fallbackDayPicture(g: Day, lifeCount: number): Promise<string | null> {
+  for (let index = 0; index < lifeCount; index += 1) {
+    const picture = await firstLifePicture(g, index);
+    if (picture) return picture;
+  }
+  return null;
+}
+
+/**
+ * All pictures of one life. Besides the original "<n>_1.jpg" a life can have several
+ * pictures named "<n> (1).jpg", "<n> (2).jpg" … — they are checked in parallel and
+ * returned in order, stopping at the first missing number.
+ */
+export function lifePictures(g: Day, index: number): Promise<string[]> {
+  const j = julian(g);
+  const key = `${j.month}/${j.day}/${index + 1}`;
+  let entry = pictureCache.get(key);
+  if (!entry) {
+    entry = (async () => {
+      const folder = `${ASSETS_BASE}/${j.month}/${j.day}/Pictures/`;
+      const legacy = `${folder}${index + 1}_1.jpg`;
+      const numbered = Array.from(
+        { length: MAX_PICTURES },
+        (_, n) => `${folder}${encodeURIComponent(`${index + 1} (${n + 1}).jpg`)}`,
+      );
+      const [legacyOk, ...numberedOk] = await Promise.all(
+        [legacy, ...numbered].map((url) => imageExists(url)),
+      );
+      const found: string[] = legacyOk ? [legacy] : [];
+      for (let n = 0; n < numbered.length; n += 1) {
+        if (!numberedOk[n]) break;
+        found.push(numbered[n]);
+      }
+      return found;
+    })();
+    pictureCache.set(key, entry);
+  }
+  return entry;
+}
+
 /** Colour of the marker shown under a day in the month grid. */
 export function markerColor(t: Tables, d: Day): string | null {
   const out = fastingOf(t, d).out;

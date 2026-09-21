@@ -133,6 +133,26 @@ body[data-font="algeti"] {
 .feast-text { color: var(--feast); }
 .fastfree-text { color: var(--fastfree); }
 
+/* Picture row: scrollbar is always visible, also on macOS / iOS ---- */
+.pictures-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--surface-2);
+}
+
+.pictures-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.pictures-scroll::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+
+.pictures-scroll::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 999px;
+}
+
 /* Scrollbar -------------------------------------------------------- */
 * { scrollbar-color: var(--accent) transparent; }
 

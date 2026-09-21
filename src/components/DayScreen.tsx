@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useApp } from "./Providers";
 import { MonthCalendar } from "./MonthCalendar";
 import { Reading } from "./Reading";
+import { Lightbox } from "./Lightbox";
 import {
   addDays,
   clampDay,
@@ -12,6 +13,7 @@ import {
   formatDay,
   fromISO,
   julian,
+  fallbackDayPicture,
   lifeTitles,
   plainText,
   sameDay,
@@ -27,6 +29,11 @@ export function DayScreen() {
   const { tables, loading, error } = useApp();
   const [day, setDay] = useState<Day>(today);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [iconOpen, setIconOpen] = useState(false);
+  const [fallbackIcon, setFallbackIcon] = useState<{
+    key: string;
+    src: string | null;
+  } | null>(null);
 
   // deep link: /?date=2026-04-12
   useEffect(() => {
@@ -69,6 +76,26 @@ export function DayScreen() {
     () => (tables ? lifeTitles(tables, day) : []),
     [tables, day],
   );
+  // Days without an icon of their own show the first picture from the lives of saints.
+  const dayId = toISO(day);
+  const needsFallback = view !== null && view.icon === null;
+  useEffect(() => {
+    if (!needsFallback || lives.length === 0) return;
+    let cancelled = false;
+    fallbackDayPicture(day, lives.length).then((src) => {
+      if (!cancelled) setFallbackIcon({ key: dayId, src });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [needsFallback, lives.length, day, dayId]);
+
+  const iconSrc = view?.icon
+    ? `/icons/${view.icon}`
+    : fallbackIcon?.key === dayId && fallbackIcon.src
+      ? fallbackIcon.src
+      : "/icons/cross3.png";
+
   const troparionPreview = useMemo(() => {
     if (!tables) return "";
     const text = plainText(troparionHtml(tables, day));
@@ -116,16 +143,23 @@ export function DayScreen() {
                 </span>
               </p>
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/icons/${view.icon ?? "cross3.png"}`}
-              alt="დღის ხატი"
-              className="h-32 w-24 rounded-xl object-contain"
-              style={{
-                backgroundColor: "var(--surface-2)",
-                border: "1px solid var(--line)",
-              }}
-            />
+            <button
+              type="button"
+              onClick={() => setIconOpen(true)}
+              className="shrink-0 cursor-zoom-in"
+              aria-label="ხატის გადიდება"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={iconSrc}
+                alt="დღის ხატი"
+                className="h-32 w-24 rounded-xl object-contain"
+                style={{
+                  backgroundColor: "var(--surface-2)",
+                  border: "1px solid var(--line)",
+                }}
+              />
+            </button>
           </div>
 
           {view.fasting.out && (
@@ -167,7 +201,7 @@ export function DayScreen() {
               className="btn"
               onClick={() => go(addDays(day, -1))}
             >
-              ← წინა
+              წინა
             </button>
             <button
               type="button"
@@ -181,7 +215,7 @@ export function DayScreen() {
               className="btn"
               onClick={() => go(addDays(day, 1))}
             >
-              შემდეგი →
+              შემდეგი
             </button>
           </div>
         </section>
@@ -219,26 +253,24 @@ export function DayScreen() {
           <Reading fragments={view.fragments} />
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-2">
+        <section className="grid items-start gap-4 sm:grid-cols-2">
           <Link
             href={`/troparia?date=${toISO(day)}`}
-            className="card p-5 transition-transform hover:-translate-y-0.5"
+            className="card block p-5 transition-transform hover:-translate-y-0.5"
           >
             <h2 className="font-[family-name:var(--font-ucnobi)] text-lg">
               დღის ტროპარ-კონდაკი
             </h2>
-            {troparionPreview ? (
-              <p
-                className="mt-2 text-sm leading-relaxed"
-                style={{ color: "var(--ink-soft)" }}
-              >
-                {troparionPreview}
-              </p>
-            ) : (
-              <p className="mt-2 text-sm" style={{ color: "var(--ink-soft)" }}>
-                ტექსტი მოიძიეთ საზოგადო ტროპარ-კონდაკებში
-              </p>
-            )}
+            <p
+              className="mt-2"
+              style={{
+                color: "var(--ink-soft)",
+                fontSize: "var(--reading-size)",
+                lineHeight: 1.6,
+              }}
+            >
+              {troparionPreview || "ტექსტი მოიძიეთ საზოგადო ტროპარ-კონდაკებში"}
+            </p>
           </Link>
 
           <div className="card p-5">
@@ -250,12 +282,15 @@ export function DayScreen() {
                 ამ დღისთვის ტექსტი არ არის
               </p>
             ) : (
-              <ul className="mt-2 space-y-1">
+              <ul
+                className="mt-2 space-y-2"
+                style={{ fontSize: "var(--reading-size)", lineHeight: 1.6 }}
+              >
                 {lives.map((title, index) => (
                   <li key={index}>
                     <Link
                       href={`/lives?date=${toISO(day)}&i=${index}`}
-                      className="text-sm underline-offset-4 hover:underline"
+                      className="underline-offset-4 hover:underline"
                     >
                       {title || "ხსენება"}
                     </Link>
@@ -266,6 +301,15 @@ export function DayScreen() {
           </div>
         </section>
       </div>
+
+      {iconOpen && (
+        <Lightbox
+          images={[iconSrc]}
+          index={0}
+          onChange={() => undefined}
+          onClose={() => setIconOpen(false)}
+        />
+      )}
     </div>
   );
 }
