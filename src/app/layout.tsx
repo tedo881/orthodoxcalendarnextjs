@@ -49,6 +49,19 @@ export default function RootLayout({
           <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6">
             {children}
           </main>
+          <iframe
+            data-saeklesio
+            src="https://koveldgiurisakitxavinextjs.vercel.app/embed"
+            title="დღის საკითხავი"
+            width="100%"
+            height="360"
+            loading="lazy"
+            style="border:0;max-width:520px;border-radius:14px"
+          ></iframe>
+          <script
+            async
+            src="https://koveldgiurisakitxavinextjs.vercel.app/embed.js"
+          ></script>
           <footer
             className="no-print mx-auto w-full max-w-6xl px-4 pb-10 text-center text-sm sm:px-6"
             style={{ color: "var(--ink-soft)" }}
