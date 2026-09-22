@@ -105,8 +105,7 @@ export function LifeScreen() {
           </nav>
         )}
       </aside>
-
-      <article className="card p-5 sm:p-8">
+      <article className="card p-5 sm:p-8 min-w-0">
         {picturesLoading && (
           <div
             className="mb-6 flex justify-center gap-3 pb-3"
