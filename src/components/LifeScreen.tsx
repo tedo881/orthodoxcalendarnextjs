@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "./Providers";
 import { ReadingHtml } from "./Reading";
 import { Lightbox, Spinner } from "./Lightbox";
@@ -25,6 +25,9 @@ export function LifeScreen() {
   const [pictures, setPictures] = useState<string[]>([]);
   const [picturesLoading, setPicturesLoading] = useState(true);
   const [viewer, setViewer] = useState<number | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -60,6 +63,29 @@ export function LifeScreen() {
       cancelled = true;
     };
   }, [day, index]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const update = () => {
+      setCanScrollRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 8);
+    };
+
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [pictures]);
+
+  function scrollRight() {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: el.clientWidth * 0.8, behavior: "smooth" });
+  }
 
   const old = julian(day);
 
@@ -127,21 +153,54 @@ export function LifeScreen() {
         )}
 
         {pictures.length > 0 && (
-          <div className="pictures-scroll mb-6 snap-x overflow-x-scroll pb-3">
-            <div className="mx-auto flex w-max gap-3 px-1">
-              {pictures.map((src, pictureIndex) => (
-                <button
-                  key={src}
-                  type="button"
-                  onClick={() => setViewer(pictureIndex)}
-                  className="shrink-0 snap-start cursor-zoom-in"
-                  aria-label="სურათის გადიდება"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <FadeImage src={src} />
-                </button>
-              ))}
+          <div className="relative mb-6">
+            <div
+              ref={scrollRef}
+              className="pictures-scroll snap-x overflow-x-scroll pb-3"
+            >
+              <div className="mx-auto flex w-max gap-3 px-1">
+                {pictures.map((src, pictureIndex) => (
+                  <button
+                    key={src}
+                    type="button"
+                    onClick={() => setViewer(pictureIndex)}
+                    className="shrink-0 snap-start cursor-zoom-in"
+                    aria-label="სურათის გადიდება"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <FadeImage src={src} />
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={scrollRight}
+                aria-label="შემდეგი სურათები"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full transition-opacity"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--line)",
+                  boxShadow: "var(--shadow)",
+                  color: "var(--ink)",
+                }}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </button>
+            )}
           </div>
         )}
         {html === null ? (
