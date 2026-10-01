@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { AppHeader } from "@/components/AppHeader";
 import { PwaInstall } from "@/components/PwaInstall";
+import { AppDownloads } from "@/components/AppDownloads";
 
 const lort = localFont({
   src: "../fonts/lort.ttf",
@@ -69,28 +70,8 @@ export default function RootLayout({
             className="no-print mx-auto w-full max-w-6xl space-y-4 px-4 pb-10 text-center text-sm sm:px-6"
             style={{ color: "var(--ink-soft)" }}
           >
-            <p>
-              გამოყენებული მასალა: „წმიდანთა ცხოვრება“, ტომი I–IV, თბილისი,
-              2001–2003 წწ.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <a
-                className="pill px-4 py-2 transition-colors hover:text-[color:var(--ink)]"
-                href="https://play.google.com/store/apps/details?id=geo.orthodox.calendar"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Android აპლიკაცია · Google Play
-              </a>
-              <a
-                className="pill px-4 py-2 transition-colors hover:text-[color:var(--ink)]"
-                href="https://apps.apple.com/us/app/georgian-orthodox-calendar/id6813075320"
-                target="_blank"
-                rel="noreferrer"
-              >
-                iPhone აპლიკაცია · App Store
-              </a>
-            </div>
+            <p></p>
+            <AppDownloads />
           </footer>
         </Providers>
       </body>
