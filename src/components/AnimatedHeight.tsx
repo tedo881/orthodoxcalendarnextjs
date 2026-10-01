@@ -23,7 +23,9 @@ export function AnimatedHeight({ children }: { children: ReactNode }) {
       }}
       className="motion-reduce:transition-none"
     >
-      <div ref={innerRef}>{children}</div>
+      <div ref={innerRef} style={{ display: "flow-root" }}>
+        {children}
+      </div>
     </div>
   );
 }
