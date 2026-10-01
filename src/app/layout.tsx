@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { AppHeader } from "@/components/AppHeader";
+import { PwaInstall } from "@/components/PwaInstall";
 
 const lort = localFont({
   src: "../fonts/lort.ttf",
@@ -27,7 +28,21 @@ export const metadata: Metadata = {
   description:
     "მართლმადიდებლური საეკლესიო კალენდარი: დღის ხსენებები, მარხვა, ტროპარ-კონდაკები და წმინდანთა ცხოვრება.",
   manifest: "/manifest.webmanifest",
-  icons: { icon: [{ url: "/icon-192.png", sizes: "192x192" }] },
+  applicationName: "საეკლესიო კალენდარი",
+  appleWebApp: {
+    capable: true,
+    title: "საეკლესიო კალენდარი",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
@@ -46,15 +61,36 @@ export default function RootLayout({
       >
         <Providers>
           <AppHeader />
-          <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6">
+          <PwaInstall />
+          <main className="w-full px-2 pb-24 pt-4 sm:px-4 sm:pt-6 lg:px-6">
             {children}
           </main>
           <footer
-            className="no-print mx-auto w-full max-w-6xl px-4 pb-10 text-center text-sm sm:px-6"
+            className="no-print mx-auto w-full max-w-6xl space-y-4 px-4 pb-10 text-center text-sm sm:px-6"
             style={{ color: "var(--ink-soft)" }}
           >
-            გამოყენებული მასალა: „წმიდანთა ცხოვრება“, ტომი I–IV, თბილისი,
-            2001–2003 წწ.
+            <p>
+              გამოყენებული მასალა: „წმიდანთა ცხოვრება“, ტომი I–IV, თბილისი,
+              2001–2003 წწ.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                className="pill px-4 py-2 transition-colors hover:text-[color:var(--ink)]"
+                href="https://play.google.com/store/apps/details?id=geo.orthodox.calendar"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Android აპლიკაცია · Google Play
+              </a>
+              <a
+                className="pill px-4 py-2 transition-colors hover:text-[color:var(--ink)]"
+                href="https://apps.apple.com/us/app/georgian-orthodox-calendar/id6813075320"
+                target="_blank"
+                rel="noreferrer"
+              >
+                iPhone აპლიკაცია · App Store
+              </a>
+            </div>
           </footer>
         </Providers>
       </body>

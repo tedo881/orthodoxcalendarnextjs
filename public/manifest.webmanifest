@@ -1,12 +1,25 @@
 {
+  "id": "/",
   "name": "საეკლესიო კალენდარი",
   "short_name": "კალენდარი",
+  "description": "მართლმადიდებლური საეკლესიო კალენდარი: დღის ხსენებები, მარხვა, ტროპარ-კონდაკები და წმინდანთა ცხოვრება.",
+  "lang": "ka",
+  "dir": "ltr",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#efe2c2",
   "theme_color": "#bd9b59",
+  "categories": ["lifestyle", "books", "education"],
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "კალენდრული მაჩვენებლები", "url": "/year/" },
+    { "name": "ტროპარ-კონდაკები", "url": "/troparia/" },
+    { "name": "სახელთა საძიებელი", "url": "/saints/" }
   ]
 }

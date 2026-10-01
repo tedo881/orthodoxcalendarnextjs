@@ -554,7 +554,7 @@ export function dayView(t: Tables, g: Day): DayView {
   const fasting = fastingOf(t, g);
   return {
     fragments: dayFragments(t, g),
-    fasting,
+    fasting,lives
     icon: iconOf(t, g),
     isFeast: fasting.brc || weekday(g) === 0,
   };
