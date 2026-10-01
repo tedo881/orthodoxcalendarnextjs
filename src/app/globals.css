@@ -159,3 +159,37 @@ body[data-font="algeti"] {
 @media print {
   .no-print { display: none !important; }
 }
+.cal-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 300ms ease,
+    opacity 300ms ease;
+}
+.cal-wrap.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.cal-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* დესკტოპზე კალენდარი ყოველთვის ღიაა */
+@media (min-width: 1024px) {
+  .cal-wrap {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transition: none;
+  }
+  .cal-inner {
+    overflow: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cal-wrap {
+    transition: none;
+  }
+}

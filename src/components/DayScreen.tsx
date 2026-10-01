@@ -8,6 +8,7 @@ import { useApp } from "./Providers";
 import { MonthCalendar } from "./MonthCalendar";
 import { Reading } from "./Reading";
 import { Lightbox } from "./Lightbox";
+import { AnimatedHeight } from "./AnimatedHeight";
 import {
   addDays,
   clampDay,
@@ -236,15 +237,17 @@ export function DayScreen() {
           </button>
         </div>
 
-        <div className={calendarOpen ? "block" : "hidden lg:block"}>
-          <MonthCalendar
-            tables={tables}
-            selected={day}
-            onSelect={(value) => {
-              go(value);
-              setCalendarOpen(false);
-            }}
-          />
+        <div className={`cal-wrap ${calendarOpen ? "is-open" : ""}`}>
+          <div className="cal-inner">
+            <MonthCalendar
+              tables={tables}
+              selected={day}
+              onSelect={(value) => {
+                go(value);
+                setCalendarOpen(false);
+              }}
+            />
+          </div>
         </div>
       </aside>
 
@@ -256,7 +259,9 @@ export function DayScreen() {
           >
             დღის ხსენებები
           </h1>
-          <Reading fragments={view.fragments} />
+          <AnimatedHeight>
+            <Reading fragments={view.fragments} />
+          </AnimatedHeight>
         </section>
 
         <section className="grid items-start gap-4 sm:grid-cols-2">
@@ -267,38 +272,46 @@ export function DayScreen() {
             <h2 className="font-[family-name:var(--font-ucnobi)] text-lg">
               დღის ტროპარ-კონდაკი
             </h2>
-            <p
-              className="mt-2"
-              style={{
-                color: "var(--ink-soft)",
-                fontSize: "var(--reading-size)",
-                lineHeight: 1.6,
-              }}
-            >
-              {troparionPreview || "ტექსტი მოიძიეთ საზოგადო ტროპარ-კონდაკებში"}
-            </p>
+            <AnimatedHeight>
+              <p
+                className="mt-2"
+                style={{
+                  color: "var(--ink-soft)",
+                  fontSize: "var(--reading-size)",
+                  lineHeight: 1.6,
+                }}
+              >
+                {troparionPreview ||
+                  "ტექსტი მოიძიეთ საზოგადო ტროპარ-კონდაკებში"}
+              </p>
+            </AnimatedHeight>
           </Link>
 
           <div className="card p-5">
             <h2 className="font-[family-name:var(--font-ucnobi)] text-lg">
               წმინდანთა ცხოვრება
             </h2>
-            {lives.length === 0 ? (
-              <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>
-                ამ დღისთვის ტექსტი არ არის
-              </p>
-            ) : (
-              <ul
-                className="mt-2 space-y-2"
-                style={{ fontSize: "var(--reading-size)", lineHeight: 1.6 }}
-              >
-                {lives.map((title, index) => (
-                  <li key={index}>
-                    <LifeLink day={day} index={index} title={title} />
-                  </li>
-                ))}
-              </ul>
-            )}
+            <AnimatedHeight>
+              {lives.length === 0 ? (
+                <p
+                  className="mt-1 text-sm"
+                  style={{ color: "var(--ink-soft)" }}
+                >
+                  ამ დღისთვის ტექსტი არ არის
+                </p>
+              ) : (
+                <ul
+                  className="mt-2 space-y-2"
+                  style={{ fontSize: "var(--reading-size)", lineHeight: 1.6 }}
+                >
+                  {lives.map((title, index) => (
+                    <li key={index}>
+                      <LifeLink day={day} index={index} title={title} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </AnimatedHeight>
           </div>
         </section>
 
