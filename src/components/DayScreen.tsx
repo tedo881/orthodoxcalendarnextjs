@@ -30,7 +30,7 @@ import {
 } from "@/lib/calendar";
 
 /** Site that provides the daily reading widget (iframe + embed.js). */
-const READING_SITE = "https://koveldgiurisakitxavinextjs.vercel.app";
+const READING_SITE = "https://scripture.ge";
 
 export function DayScreen() {
   const { tables, loading, error } = useApp();
