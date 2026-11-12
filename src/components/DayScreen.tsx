@@ -9,6 +9,7 @@ import { MonthCalendar } from "./MonthCalendar";
 import { Reading } from "./Reading";
 import { Lightbox } from "./Lightbox";
 import { AnimatedHeight } from "./AnimatedHeight";
+import { TypikonShort } from "./TypikonShort";
 import {
   addDays,
   clampDay,
@@ -327,6 +328,8 @@ export function DayScreen() {
             strategy="afterInteractive"
           />
         </section>
+
+        <TypikonShort date={toISO(day)} />
       </div>
 
       {iconOpen && (
